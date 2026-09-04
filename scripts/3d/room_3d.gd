@@ -1,4 +1,5 @@
 extends Node3D
+
 ## Static placeholder room built from primitives: desk (with collision), floor,
 ## back wall, lamp (with light), mug, notebook, frames, clock. No gameplay.
 
@@ -20,42 +21,38 @@ func _ready() -> void:
 	for lx in [-6.8, 6.8]:
 		for lz in [-3.8, 3.8]:
 			add_child(InteractableObject3D.box(Vector3(0.4, 3.0, 0.4), Color(0.35, 0.2, 0.12), Vector3(lx, -1.9, lz)))
-	# floor & walls
-	add_child(InteractableObject3D.box(Vector3(40, 0.2, 40), Color(0.12, 0.08, 0.06), Vector3(0, -3.5, 0)))
-	add_child(InteractableObject3D.box(Vector3(40, 14, 0.3), Color(0.2, 0.13, 0.1), Vector3(0, 3.5, -4.75)))
-	add_child(InteractableObject3D.box(Vector3(40, 0.3, 0.5), Color(0.3, 0.2, 0.14), Vector3(0, 0.15, -4.6)))  # wainscot
-	# lamp
-	add_child(InteractableObject3D.box(Vector3(1.4, 0.15, 1.4), Color(0.18, 0.36, 0.34), Vector3(-6.3, 0.07, -3.2)))
-	var pole := InteractableObject3D.box(Vector3(0.12, 3.6, 0.12), Color(0.18, 0.36, 0.34), Vector3(-6.3, 1.9, -3.2))
-	pole.rotation.z = -0.25
-	add_child(pole)
-	var arm := InteractableObject3D.box(Vector3(2.6, 0.12, 0.12), Color(0.18, 0.36, 0.34), Vector3(-4.7, 3.8, -3.0))
-	arm.rotation.z = 0.25
-	add_child(arm)
-	var head := MeshInstance3D.new()
-	var cone := CylinderMesh.new()
-	cone.top_radius = 0.35
-	cone.bottom_radius = 0.9
-	cone.height = 0.9
-	head.mesh = cone
-	var hm := StandardMaterial3D.new()
-	hm.albedo_color = Color(0.2, 0.42, 0.4)
-	head.material_override = hm
-	head.position = Vector3(-3.5, 3.5, -2.8)
-	head.rotation.z = -0.35
-	add_child(head)
-	var bulb := InteractableObject3D.sphere(0.18, Color(1, 0.95, 0.7), Vector3(-3.35, 3.1, -2.8))
-	bulb.material_override.emission_enabled = true
-	bulb.material_override.emission = Color(1, 0.9, 0.6)
-	bulb.material_override.emission_energy_multiplier = 3.0
-	add_child(bulb)
-	var light := OmniLight3D.new()
-	light.position = Vector3(-3.0, 3.0, -2.2)
-	light.light_color = Color(1.0, 0.85, 0.6)
-	light.light_energy = 1.6
-	light.omni_range = 14.0
-	light.shadow_enabled = true
-	add_child(light)
+	# Floor and walls. These were painted for a desk at 2am - the wall albedo was
+	# 0.2 and the floor 0.12, which is very nearly black paint, and no amount of
+	# light makes black paint bright. That is why adding the ceiling bulb lit the
+	# desk beautifully and left the room around it looking switched off. Lifting the
+	# albedo is the other half of "turn the lights on", and it has to be the surfaces
+	# rather than more light: brighter lamps would only have blown out the desk.
+	#
+	# Still well below the desk top (an orange around 0.55) so the desk stays the
+	# brightest surface in the frame and the eye keeps going there first.
+	add_child(InteractableObject3D.box(Vector3(40, 0.2, 40), Color(0.26, 0.19, 0.15), Vector3(0, -3.5, 0)))
+	add_child(InteractableObject3D.box(Vector3(40, 14, 0.3), Color(0.44, 0.34, 0.28), Vector3(0, 3.5, -4.75)))
+	add_child(InteractableObject3D.box(Vector3(40, 0.3, 0.5), Color(0.5, 0.38, 0.28), Vector3(0, 0.15, -4.6)))  # wainscot
+	# The desk lamp lives in DeskLamp3D now - it is clickable, so it belongs
+	# with the cat, the dock and the robot rather than here with the scenery.
+	# The ceiling light. The desk lamp is still the light that MATTERS - it draws
+	# the pool the player works in and casts every shadow on the desk - but a room
+	# lit by one desk lamp and nothing else is a room at 2am, and Anh Khai wants the
+	# lights on. This is the overhead bulb doing exactly the job an overhead bulb
+	# does: lifting the whole room off black without deciding anything.
+	#
+	# Shadows deliberately off. A second shadow-caster would give every domino a
+	# second shadow going the other way, and the one thing the desk lamp buys is
+	# that a piece's shadow tells you where it stands relative to the lamp. It hangs
+	# high and behind the camera, so it is never in frame and needs no fixture mesh.
+	var ceiling := OmniLight3D.new()
+	ceiling.position = Vector3(0.0, 8.5, 1.0)
+	ceiling.light_color = Color(1.0, 0.94, 0.85)
+	ceiling.light_energy = 2.4
+	ceiling.omni_range = 34.0
+	ceiling.omni_attenuation = 1.0
+	ceiling.shadow_enabled = false
+	add_child(ceiling)
 	# mug
 	var mug := MeshInstance3D.new()
 	var cyl := CylinderMesh.new()
@@ -87,13 +84,18 @@ func _ready() -> void:
 	var note := InteractableObject3D.box(Vector3(0.7, 0.02, 0.7), Color(0.95, 0.8, 0.25), Vector3(5.6, 0.01, 3.2))
 	note.rotation.y = 0.2
 	add_child(note)
-	# clock on the wall
-	add_child(InteractableObject3D.box(Vector3(1.6, 0.8, 0.15), Color(0.1, 0.09, 0.09), Vector3(4.6, 3.4, -4.6)))
+	# digital clock, standing ON the desk behind the run rather than up on the
+	# wall: the player's eyes live on the desk, and the time is something they
+	# need at a glance without ever looking away from the dominoes
+	var clock_at := Vector3(4.3, 0.34, -3.9)
+	add_child(InteractableObject3D.box(Vector3(1.25, 0.68, 0.5), Color(0.09, 0.08, 0.09), clock_at))
+	add_child(InteractableObject3D.box(Vector3(1.05, 0.44, 0.02), Color(0.05, 0.05, 0.06), clock_at + Vector3(0, 0.02, 0.26)))
 	_clock = Label3D.new()
-	_clock.pixel_size = 0.006
+	_clock.pixel_size = 0.0035
 	_clock.font_size = 96
 	_clock.modulate = Color(1.0, 0.72, 0.2)
-	_clock.position = Vector3(4.6, 3.4, -4.5)
+	_clock.outline_size = 0
+	_clock.position = clock_at + Vector3(0, 0.02, 0.29)
 	add_child(_clock)
 
 func _process(_delta: float) -> void:

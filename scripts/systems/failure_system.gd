@@ -21,6 +21,10 @@ func _ready() -> void:
 func _on_collapse(knocked: int, standing_before: int) -> void:
 	if not GameManager.is_playing():
 		return
+	# a domino was disturbed but everything stayed up - nothing to report
+	if knocked == 0:
+		_last_event = null
+		return
 	var share := float(knocked) / maxi(standing_before, 1)
 	if standing_before >= fatal_min_standing and share >= fatal_share:
 		GameManager.start_failing()

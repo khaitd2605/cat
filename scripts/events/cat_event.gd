@@ -36,6 +36,10 @@ func get_actions() -> Array[Dictionary]:
 
 func _on_stage_entered(index: int) -> void:
 	_cat.status_text = get_stage_text()
+	# tell it where the player is working, so it prowls toward the dominoes that
+	# actually exist instead of a fixed spot in the middle of the desk
+	if _cat.has_method("set_interest"):
+		_cat.set_interest(task.landing_spot())
 	match index:
 		0:
 			_cat.look()

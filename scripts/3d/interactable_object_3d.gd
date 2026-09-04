@@ -23,9 +23,14 @@ func _ready() -> void:
 	shape.position = hit_offset
 	add_child(shape)
 	_label = Label3D.new()
-	_label.pixel_size = 0.004
-	_label.font_size = 30
-	_label.outline_size = 8
+	# A Label3D's on-screen size is font_size * pixel_size * (desk-to-screen
+	# scale). At 30 * 0.004 it came out about ten pixels tall on a 720p window -
+	# legible only if you already knew what it said, which Anh Khai rightly
+	# called out on the dock. The larger font_size is for crispness and the
+	# larger pixel_size is the actual fix.
+	_label.pixel_size = 0.009
+	_label.font_size = 48
+	_label.outline_size = 12
 	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_label.no_depth_test = true
 	_label.visible = false

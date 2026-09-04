@@ -2,3 +2,8 @@
 build/
 *.import.tmp
 .DS_Store
+# Debug screenshots the autotest writes at the project root (--autotest-shot)
+# and the PIL crops taken off them, plus the .import files Godot generates for
+# each one. Named as hidden files so one pattern catches every future probe.
+/.*.png
+/.*.png.import

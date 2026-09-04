@@ -18,13 +18,32 @@ var _task: Node
 
 func _ready() -> void:
 	_task = get_node_or_null(task_path)
+	var lv := GameManager.level_def()
+	first_delay = lv["first_delay"]
+	min_gap = lv["min_gap"]
+	max_gap = lv["max_gap"]
 	for child in get_children():
-		if child is EnvironmentalEvent:
+		if child is EnvironmentalEvent and _in_level(child, lv):
 			_events.append(child)
 	_timer = first_delay
 
+## Is this event awake on this desk? Teaching one thing at a time means the wind
+## has to be genuinely absent on the wind-free levels, not merely unlikely - a
+## player meeting a gust on level 2 learns that the game lies about its lessons.
+func _in_level(e: EnvironmentalEvent, lv: Dictionary) -> bool:
+	if e is WindEvent:
+		return lv["wind"]
+	if e is CatEvent:
+		return lv["cat"]
+	return true
+
 func _process(delta: float) -> void:
 	if not GameManager.is_playing() or _current != null or _events.is_empty():
+		return
+	# Nothing new starts once the player pushes: the run is judged by how it was
+	# laid, not by what wandered in halfway through. The timer is left where it
+	# is, so the room picks up right where it left off afterwards.
+	if _task and not _task.accepts_events():
 		return
 	_timer -= delta
 	if _timer <= 0.0:

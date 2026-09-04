@@ -11,6 +11,14 @@ config/description="Xếp domino tỉ mỉ trong khi để mắt tới gió và 
 run/main_scene="res://scenes/main_3d.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
+; No Godot logo on the way in. The web shell hardcodes the boot splash into an
+; <img id="status-splash">, so turning the image off is what makes the loading
+; screen show nothing but the progress bar - there is no way to remove it from
+; the generated index.html without a custom HTML shell.
+boot_splash/show_image=false
+; The same colour as the room's Environment background, so the load screen is
+; already the dark warm room the game opens into rather than Godot's grey.
+boot_splash/bg_color=Color(0.09, 0.06, 0.05, 1)
 
 [autoload]
 

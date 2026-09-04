@@ -39,4 +39,7 @@ static func button(text: String, size := 18, min_size := Vector2(150, 48)) -> Bu
 	b.add_theme_stylebox_override("pressed", panel(Color(0.22, 0.16, 0.12, 1.0), GOLD, 10))
 	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	# Here rather than at each call site, so a button added later cannot be the one
+	# silent button in the game. Quiet: it is confirmation, not an event.
+	b.pressed.connect(func() -> void: Sfx.play("ui", -9.0))
 	return b

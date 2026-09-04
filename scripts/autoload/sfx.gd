@@ -67,6 +67,28 @@ func _build_library() -> void:
 		return sin(TAU * 75.0 * t) * (0.5 + 0.5 * sin(TAU * 30.0 * t)) * sin(n * PI) * 0.35)
 	_streams["thud"] = _synth(0.3, func(t: float, n: float) -> float:
 		return sin(TAU * 70.0 * t) * exp(-n * 5.0) * 0.8)
+	# The robot's motor. Replayed on a loop while it drives, so it needs to be
+	# quiet, dull and slightly wobbly - a hum you stop hearing until it gets
+	# close, which is exactly how you notice the real thing.
+	_streams["motor"] = _synth(1.0, func(t: float, n: float) -> float:
+		var hum := sin(TAU * 108.0 * t) * 0.34 + sin(TAU * 216.0 * t) * 0.11
+		var window: float = min(1.0, min(n, 1.0 - n) * 8.0)
+		return (hum * (0.85 + 0.15 * sin(TAU * 7.0 * t)) + _noise() * 0.09) * window)
+	# Two rising blips: the robot acknowledging a button.
+	_streams["beep"] = _synth(0.17, func(t: float, n: float) -> float:
+		var f := 760.0 if n < 0.5 else 1040.0
+		return sin(TAU * f * t) * exp(-fmod(n, 0.5) * 7.0) * 0.4)
+	# A lamp switch: one hard mechanical click, no tone. Two clacks a few
+	# milliseconds apart is what a rocker switch actually sounds like, and the
+	# second one is what makes it read as a switch rather than as a tap.
+	_streams["switch"] = _synth(0.1, func(t: float, n: float) -> float:
+		var a := _noise() * exp(-n * 55.0) * 0.7
+		var b := _noise() * exp(-maxf(n - 0.28, 0.0) * 40.0) * 0.45 if n > 0.28 else 0.0
+		return a + b + sin(TAU * 240.0 * t) * exp(-n * 30.0) * 0.2)
+	# The UI click. Deliberately duller and shorter than "beep", which belongs to
+	# the robot: a menu is not a character and should not sound like one.
+	_streams["ui"] = _synth(0.07, func(t: float, n: float) -> float:
+		return sin(TAU * 420.0 * t) * exp(-n * 14.0) * 0.35 + _noise() * exp(-n * 40.0) * 0.1)
 	_streams["win"] = _synth(0.9, func(t: float, n: float) -> float:
 		var notes := [523.0, 659.0, 784.0, 1046.0]
 		var idx: int = min(int(n * 4.0), 3)
