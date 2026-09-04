@@ -1,0 +1,132 @@
+[gd_scene load_steps=18 format=3]
+
+[ext_resource type="Script" path="res://scripts/3d/main_3d.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/3d/room_3d.gd" id="2_room"]
+[ext_resource type="Script" path="res://scripts/3d/window_3d.gd" id="3_window"]
+[ext_resource type="Script" path="res://scripts/3d/curtain_3d.gd" id="4_curtain"]
+[ext_resource type="Script" path="res://scripts/3d/paper_3d.gd" id="5_paper"]
+[ext_resource type="Script" path="res://scripts/3d/domino_task_3d.gd" id="6_task"]
+[ext_resource type="Script" path="res://scripts/3d/cat_3d.gd" id="7_cat"]
+[ext_resource type="Script" path="res://scripts/3d/focus_system_3d.gd" id="8_focus"]
+[ext_resource type="Script" path="res://scripts/events/event_scheduler.gd" id="9_sched"]
+[ext_resource type="Script" path="res://scripts/events/wind_event.gd" id="10_wind"]
+[ext_resource type="Script" path="res://scripts/events/cat_event.gd" id="11_catev"]
+[ext_resource type="Script" path="res://scripts/systems/player_controls.gd" id="12_controls"]
+[ext_resource type="Script" path="res://scripts/systems/failure_system.gd" id="13_fail"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="14_hud"]
+
+[sub_resource type="Environment" id="Environment_room"]
+background_mode = 1
+background_color = Color(0.09, 0.06, 0.05, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 0.85, 0.7, 1)
+ambient_light_energy = 0.3
+tonemap_mode = 2
+
+[sub_resource type="QuadMesh" id="QuadMesh_leaf"]
+size = Vector2(0.12, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="Mat_leaf"]
+shading_mode = 0
+albedo_color = Color(0.7, 0.85, 0.35, 0.9)
+billboard_mode = 1
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_main")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_room")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.85, -0.35, 0.4, 0, 0.75, 0.66, -0.53, -0.56, 0.64, 0, 8, 6)
+light_color = Color(1, 0.9, 0.78, 1)
+light_energy = 0.55
+shadow_enabled = true
+
+[node name="Camera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.8, 0.6, 0, -0.6, 0.8, 0, 7.4, 8.6)
+fov = 48.0
+
+[node name="Room" type="Node3D" parent="."]
+script = ExtResource("2_room")
+
+[node name="Window" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 1.6, -4.55)
+script = ExtResource("3_window")
+
+[node name="Curtain" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 4.85, -4.3)
+script = ExtResource("4_curtain")
+
+[node name="WindParticles" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 3.0, -4.2)
+emitting = false
+amount = 30
+lifetime = 2.2
+mesh = SubResource("QuadMesh_leaf")
+emission_shape = 1
+emission_sphere_radius = 1.2
+direction = Vector3(0.2, -0.2, 1)
+spread = 20.0
+gravity = Vector3(0, -0.8, 0)
+initial_velocity_min = 2.5
+initial_velocity_max = 4.5
+angular_velocity_min = -200.0
+angular_velocity_max = 200.0
+
+[node name="Paper" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.3, 0.0, 2.7)
+script = ExtResource("5_paper")
+
+[node name="DominoTask" type="Node3D" parent="."]
+script = ExtResource("6_task")
+camera_path = NodePath("../Camera")
+
+[node name="Cat" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.6, 0.0, 3.0)
+script = ExtResource("7_cat")
+
+[node name="FocusSystem" type="Node" parent="."]
+script = ExtResource("8_focus")
+task_path = NodePath("../DominoTask")
+camera_path = NodePath("../Camera")
+
+[node name="Scheduler" type="Node" parent="."]
+script = ExtResource("9_sched")
+task_path = NodePath("../DominoTask")
+
+[node name="WindEvent" type="Node" parent="Scheduler"]
+script = ExtResource("10_wind")
+event_id = "wind"
+warning_title = "GIÓ LÙA"
+icon_kind = "wind"
+failure_text = "Một cơn gió mạnh ùa qua cửa sổ và thổi đổ dãy domino."
+missed_signals_text = "rèm động và cửa sổ hé mở, lá bay vào, tờ giấy trên bàn bay, rồi domino rung. Đóng cửa sổ kịp, hoặc giữ Space/chuột phải để che khi gió ập tới."
+task_path = NodePath("../../DominoTask")
+window_path = NodePath("../../Window")
+curtain_path = NodePath("../../Curtain")
+paper_path = NodePath("../../Paper")
+particles_path = NodePath("../../WindParticles")
+
+[node name="CatEvent" type="Node" parent="Scheduler"]
+script = ExtResource("11_catev")
+event_id = "cat"
+warning_title = "MÈO NGHỊCH"
+icon_kind = "cat"
+failure_text = "Con mèo nhảy thẳng lên bàn và quét sạch dãy domino."
+missed_signals_text = "mèo mở mắt nhìn lên bàn, đứng dậy đi lại gần, ngồi sát mép bàn, rồi thu mình lại. Click vào mèo để xua nó về chỗ ngủ."
+task_path = NodePath("../../DominoTask")
+cat_path = NodePath("../../Cat")
+smash_radius = 1.4
+
+[node name="PlayerControls" type="Node" parent="."]
+script = ExtResource("12_controls")
+task_path = NodePath("../DominoTask")
+
+[node name="FailureSystem" type="Node" parent="."]
+script = ExtResource("13_fail")
+task_path = NodePath("../DominoTask")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+layer = 2
+script = ExtResource("14_hud")

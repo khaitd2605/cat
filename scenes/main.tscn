@@ -1,0 +1,156 @@
+[gd_scene load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/environment/room_background.gd" id="2_room"]
+[ext_resource type="Script" path="res://scripts/environment/curtain.gd" id="3_curtain"]
+[ext_resource type="Script" path="res://scripts/environment/window_object.gd" id="4_window"]
+[ext_resource type="Script" path="res://scripts/task/domino_task.gd" id="5_task"]
+[ext_resource type="Script" path="res://scripts/environment/cat.gd" id="6_cat"]
+[ext_resource type="Script" path="res://scripts/events/event_scheduler.gd" id="7_sched"]
+[ext_resource type="Script" path="res://scripts/events/wind_event.gd" id="8_wind"]
+[ext_resource type="Script" path="res://scripts/events/cat_event.gd" id="9_catev"]
+[ext_resource type="Script" path="res://scripts/systems/failure_system.gd" id="10_fail"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="11_hud"]
+[ext_resource type="Script" path="res://scripts/systems/player_controls.gd" id="12_controls"]
+[ext_resource type="Script" path="res://scripts/systems/focus_system.gd" id="13_focus"]
+[ext_resource type="Script" path="res://scripts/environment/paper.gd" id="14_paper"]
+
+[sub_resource type="Gradient" id="Gradient_glow"]
+offsets = PackedFloat32Array(0, 0.35, 1)
+colors = PackedColorArray(1, 0.85, 0.55, 0.55, 1, 0.75, 0.45, 0.22, 1, 0.7, 0.4, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_glow"]
+gradient = SubResource("Gradient_glow")
+width = 256
+height = 256
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_leaf"]
+offsets = PackedFloat32Array(0, 0.7, 1)
+colors = PackedColorArray(0.7, 0.85, 0.35, 0.9, 0.7, 0.85, 0.35, 0.7, 0.7, 0.85, 0.35, 0)
+
+[sub_resource type="Gradient" id="Gradient_puff"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(1, 0.92, 0.7, 0.8, 1, 0.92, 0.7, 0)
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_main")
+
+[node name="Room" type="Node2D" parent="."]
+script = ExtResource("2_room")
+
+[node name="Window" type="Area2D" parent="."]
+position = Vector2(640, 125)
+script = ExtResource("4_window")
+
+[node name="Curtain" type="Node2D" parent="."]
+position = Vector2(640, 5)
+script = ExtResource("3_curtain")
+
+[node name="WindParticles" type="CPUParticles2D" parent="."]
+position = Vector2(660, 120)
+emitting = false
+amount = 30
+lifetime = 1.8
+emission_shape = 1
+emission_sphere_radius = 90.0
+direction = Vector2(1, 0.45)
+spread = 18.0
+gravity = Vector2(0, 40)
+initial_velocity_min = 220.0
+initial_velocity_max = 420.0
+angular_velocity_min = -200.0
+angular_velocity_max = 200.0
+scale_amount_min = 2.0
+scale_amount_max = 4.5
+color_ramp = SubResource("Gradient_leaf")
+
+[node name="Paper" type="Node2D" parent="."]
+position = Vector2(880, 560)
+script = ExtResource("14_paper")
+
+[node name="DominoTask" type="Node2D" parent="."]
+position = Vector2(640, 430)
+script = ExtResource("5_task")
+
+[node name="PlacePuff" type="CPUParticles2D" parent="DominoTask"]
+emitting = false
+amount = 10
+lifetime = 0.45
+one_shot = true
+explosiveness = 1.0
+direction = Vector2(0, -1)
+spread = 180.0
+gravity = Vector2(0, -20)
+initial_velocity_min = 30.0
+initial_velocity_max = 80.0
+scale_amount_min = 1.5
+scale_amount_max = 3.0
+color_ramp = SubResource("Gradient_puff")
+
+[node name="Cat" type="Area2D" parent="."]
+position = Vector2(1080, 470)
+script = ExtResource("6_cat")
+
+[node name="Lighting" type="Node2D" parent="."]
+
+[node name="Dim" type="CanvasModulate" parent="Lighting"]
+color = Color(0.82, 0.76, 0.72, 1)
+
+[node name="LampGlow" type="Sprite2D" parent="Lighting"]
+material = SubResource("CanvasItemMaterial_add")
+position = Vector2(300, 380)
+scale = Vector2(3.4, 2.4)
+texture = SubResource("GradientTexture2D_glow")
+
+[node name="Scheduler" type="Node" parent="."]
+script = ExtResource("7_sched")
+task_path = NodePath("../DominoTask")
+
+[node name="WindEvent" type="Node" parent="Scheduler"]
+script = ExtResource("8_wind")
+event_id = "wind"
+warning_title = "GIÓ LÙA"
+icon_kind = "wind"
+failure_text = "Một cơn gió mạnh ùa qua cửa sổ và thổi đổ toàn bộ domino."
+missed_signals_text = "rèm động và cửa sổ hé mở, lá bay vào, tờ giấy trên bàn bay, rồi domino rung. Đóng cửa sổ kịp, hoặc giữ Space/chuột phải để che khi gió ập tới."
+task_path = NodePath("../../DominoTask")
+window_path = NodePath("../../Window")
+curtain_path = NodePath("../../Curtain")
+paper_path = NodePath("../../Paper")
+particles_path = NodePath("../../WindParticles")
+
+[node name="CatEvent" type="Node" parent="Scheduler"]
+script = ExtResource("9_catev")
+event_id = "cat"
+warning_title = "MÈO NGHỊCH"
+icon_kind = "cat"
+failure_text = "Con mèo nhảy thẳng lên bàn và quét sạch đống domino."
+missed_signals_text = "mèo mở mắt nhìn lên bàn, đứng dậy đi lại gần, ngồi sát mép bàn, rồi thu mình lại. Click vào mèo để xua nó về chỗ ngủ."
+task_path = NodePath("../../DominoTask")
+cat_path = NodePath("../../Cat")
+
+[node name="PlayerControls" type="Node" parent="."]
+script = ExtResource("12_controls")
+task_path = NodePath("../DominoTask")
+
+[node name="FailureSystem" type="Node" parent="."]
+script = ExtResource("10_fail")
+task_path = NodePath("../DominoTask")
+
+[node name="Camera" type="Camera2D" parent="."]
+position = Vector2(640, 400)
+
+[node name="FocusSystem" type="Node" parent="."]
+script = ExtResource("13_focus")
+task_path = NodePath("../DominoTask")
+camera_path = NodePath("../Camera")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+layer = 2
+script = ExtResource("11_hud")
