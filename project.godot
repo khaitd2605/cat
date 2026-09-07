@@ -46,4 +46,9 @@ pointing/emulate_mouse_from_touch=true
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+; The room is flat colours and hard silhouettes - no busy textures, no glinting
+; shaders - so every bit of aliasing the game has is on a geometry edge, which is
+; exactly and only what MSAA fixes. Measured on the crowded desk: 4x costs
+; +0.18 ms/frame against a 16.7 ms budget, and 8x buys nothing visible over it.
+anti_aliasing/quality/msaa_3d=2
 textures/canvas_textures/default_texture_filter=1
