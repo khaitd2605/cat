@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/3d/main_3d.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/3d/room_3d.gd" id="2_room"]
@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://scripts/3d/vacuum_dock_3d.gd" id="15_dock"]
 [ext_resource type="Script" path="res://scripts/3d/robot_vacuum_3d.gd" id="16_robot"]
 [ext_resource type="Script" path="res://scripts/3d/desk_lamp_3d.gd" id="17_lamp"]
+[ext_resource type="Script" path="res://scripts/ui/touch_controls.gd" id="18_touch"]
 
 [sub_resource type="Environment" id="Environment_room"]
 background_mode = 1
@@ -122,7 +123,7 @@ event_id = "wind"
 warning_title = "GIÓ LÙA"
 icon_kind = "wind"
 failure_text = "Một cơn gió mạnh ùa qua cửa sổ và thổi đổ dãy domino."
-missed_signals_text = "rèm động và cửa sổ hé mở, lá bay vào, tờ giấy trên bàn bay, rồi domino rung. Đóng cửa sổ kịp, hoặc giữ Space/chuột phải để che khi gió ập tới."
+missed_signals_text = "rèm động và cửa sổ hé mở, lá bay vào, tờ giấy trên bàn bay, rồi domino rung. Đóng cửa sổ kịp, hoặc che chắn khi gió ập tới."
 task_path = NodePath("../../DominoTask")
 window_path = NodePath("../../Window")
 curtain_path = NodePath("../../Curtain")
@@ -151,3 +152,10 @@ task_path = NodePath("../DominoTask")
 [node name="HUD" type="CanvasLayer" parent="."]
 layer = 2
 script = ExtResource("14_hud")
+
+[node name="TouchControls" type="CanvasLayer" parent="."]
+layer = 3
+script = ExtResource("18_touch")
+task_path = NodePath("../DominoTask")
+focus_path = NodePath("../FocusSystem")
+controls_path = NodePath("../PlayerControls")

@@ -8,6 +8,16 @@ const GOLD := Color(0.93, 0.78, 0.4)
 const CREAM := Color(0.96, 0.92, 0.85)
 const DANGER := Color(0.9, 0.3, 0.25)
 
+## True on a phone or tablet. Every string that names a key needs a second
+## wording there, so the test lives here rather than being spelled out at each
+## call site and drifting.
+static func touch() -> bool:
+	return DisplayServer.is_touchscreen_available()
+
+## Picks between the keyboard wording and the touch wording of the same line.
+static func say(keys: String, taps: String) -> String:
+	return taps if touch() else keys
+
 static func panel(bg := PANEL_BG, border := PANEL_BORDER, radius := 12, border_w := 2) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = bg

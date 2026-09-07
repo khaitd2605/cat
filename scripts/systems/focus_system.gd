@@ -44,7 +44,10 @@ func _ready() -> void:
 	layer.add_child(_rect)
 
 func _process(delta: float) -> void:
-	var want := _task.is_focusing() and GameManager.is_playing()
+	# Annotated, not inferred: `_task` is a bare Node, so `is_focusing()` comes
+	# back as Variant and the whole expression refuses to infer. The 3D twin has
+	# always had this; only the export ever compiled this file, so it went unseen.
+	var want: bool = _task.is_focusing() and GameManager.is_playing()
 	if want != is_focus:
 		is_focus = want
 		EventBus.focus_changed.emit(is_focus)

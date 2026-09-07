@@ -55,7 +55,7 @@ const LEVELS: Array[Dictionary] = [
 	},
 	{
 		"name": "Gió đầu mùa",
-		"hint": "Gió sắp tới. Đóng cửa sổ, hoặc giữ Space che chắn lúc nó thổi.",
+		"hint": "Gió sắp tới. Đóng cửa sổ, hoặc che chắn lúc nó thổi.",
 		"start": Vector3(-5.0, 0, 2.6), "goal": Vector3(5.0, 0, -2.6),
 		"obstacles": 4, "seed": 3313,
 		"wind": true, "cat": false, "robot": false,

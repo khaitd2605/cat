@@ -101,7 +101,7 @@ func _build() -> void:
 	pick.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pick.pressed.connect(_open_menu)
 	buttons.add_child(pick)
-	var restart := UiTheme.button("Chơi lại (R)", 13, Vector2(0, 30))
+	var restart := UiTheme.button(UiTheme.say("Chơi lại (R)", "Chơi lại"), 13, Vector2(0, 30))
 	restart.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	restart.pressed.connect(GameManager.restart)
 	buttons.add_child(restart)
@@ -132,7 +132,15 @@ func _build() -> void:
 	_toast.modulate.a = 0.0
 	stack.add_child(_toast)
 
-	_hint = UiTheme.label("Xếp từ BẮT ĐẦU tới ĐÍCH, quân sau nằm trong vòng sáng của quân trước, đợi hết lắc rồi thả  •  Enter / bấm vạch BẮT ĐẦU: đẩy dây  •  Shift: nhìn gần  •  Space: che chắn  •  F2: xếp sẵn (cheat)", 14, Color(1, 0.95, 0.85, 0.7), HORIZONTAL_ALIGNMENT_CENTER)
+	# Two hint lines, because naming keys a phone does not have is worse than no
+	# hint at all: on touch the same verbs live on the buttons TouchControls puts
+	# in the bottom corners, and the cheat key is left unsaid.
+	var common := "Xếp từ BẮT ĐẦU tới ĐÍCH, quân sau nằm trong vòng sáng của quân trước, đợi hết lắc rồi thả"
+	var keys := "  •  Enter / bấm vạch BẮT ĐẦU: đẩy dây  •  Shift: nhìn gần  •  Space: che chắn  •  F2: xếp sẵn (cheat)"
+	var taps := "  •  Chạm giữ để nhấc quân, buông tay để đặt  •  Dùng các nút ở hai góc dưới"
+	_hint = UiTheme.label(common + (taps if DisplayServer.is_touchscreen_available() else keys),
+		14, Color(1, 0.95, 0.85, 0.7), HORIZONTAL_ALIGNMENT_CENTER)
+	_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	stack.add_child(_hint)
 
 	if assist_banner:
@@ -166,12 +174,12 @@ func _build() -> void:
 	ccol.add_child(_overlay_stats)
 	# Only ever shown after a win, and it is the first button so the eye lands on
 	# the way forward rather than on the way back.
-	_overlay_next = UiTheme.button("Màn tiếp theo  (Enter)", 20, Vector2(260, 54))
+	_overlay_next = UiTheme.button(UiTheme.say("Màn tiếp theo  (Enter)", "Màn tiếp theo"), 20, Vector2(260, 54))
 	_overlay_next.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_overlay_next.visible = false
 	_overlay_next.pressed.connect(GameManager.next_level)
 	ccol.add_child(_overlay_next)
-	var retry := UiTheme.button("Chơi lại màn này  (R)", 20, Vector2(260, 54))
+	var retry := UiTheme.button(UiTheme.say("Chơi lại màn này  (R)", "Chơi lại màn này"), 20, Vector2(260, 54))
 	retry.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	retry.pressed.connect(GameManager.restart)
 	ccol.add_child(retry)
@@ -312,6 +320,31 @@ func _build_menu(root: Control) -> void:
 	_menu_rows.add_theme_constant_override("separation", 6)
 	_menu_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(_menu_rows)
-	var close := UiTheme.button("Đóng  (Esc)", 17, Vector2(320, 42))
+	# The cheat used to be F2 and nothing else, which meant it did not exist on a
+	# phone. It lives in the menu because the menu is the one surface reachable
+	# from every device, and because a cheat that sat on the playfield would be
+	# tapped by accident on a screen you place dominoes on with your finger.
+	var cheat := UiTheme.button(UiTheme.say("Xếp sẵn cả dây  (F2)", "Xếp sẵn cả dây"),
+		17, Vector2(320, 42))
+	cheat.pressed.connect(_cheat_fill)
+	col.add_child(cheat)
+	var close := UiTheme.button(UiTheme.say("Đóng  (Esc)", "Đóng"), 17, Vector2(320, 42))
 	close.pressed.connect(_close_menu)
 	col.add_child(close)
+
+## Duck-typed like the rest of the shared HUD: the 2D scene has no router, so the
+## button simply says so there instead of the HUD needing to know which task it
+## is sitting above.
+func _cheat_fill() -> void:
+	var task: Node = null
+	for n in get_parent().get_children():
+		if n.has_method("debug_fill_route"):
+			task = n
+			break
+	if task == null:
+		EventBus.notify.emit("Bàn này không có cheat.", Color(1, 0.85, 0.5))
+		return
+	# Close first: the menu pauses the tree, and the router lays real bodies that
+	# need the physics step to settle. Deferred so the unpause has landed.
+	_close_menu()
+	task.debug_fill_route.call_deferred()

@@ -23,6 +23,9 @@ extends Node
 var is_focus := false
 var focus_amount := 0.0
 var zoom := 0.0            # 0 = wide, 1 = leaned in
+## Held by the on-screen NHÌN GẦN button on touch devices; see TouchControls.
+## SHIFT still works, so a hybrid laptop can use either.
+var zoom_held := false
 var _task: Node
 var _camera: Camera3D
 var _rect: ColorRect
@@ -63,8 +66,9 @@ func _process(delta: float) -> void:
 		EventBus.focus_changed.emit(is_focus)
 	focus_amount = move_toward(focus_amount, 1.0 if is_focus else 0.0, delta * 2.5)
 
-	# voluntary zoom only: SHIFT held, or wheel notches
-	var target_zoom: float = maxf(_wheel_zoom, 1.0 if Input.is_key_pressed(KEY_SHIFT) else 0.0)
+	# voluntary zoom only: SHIFT (or the touch button) held, or wheel notches
+	var lean: bool = Input.is_key_pressed(KEY_SHIFT) or zoom_held
+	var target_zoom: float = maxf(_wheel_zoom, 1.0 if lean else 0.0)
 	zoom = move_toward(zoom, target_zoom, delta * zoom_speed)
 	_camera.position = home_pos
 	_camera.look_at(look_at_point)

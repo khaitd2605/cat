@@ -697,7 +697,12 @@ func _drop() -> void:
 	_settle_rest_t = 0.0
 	d.wake()
 	d.angular_velocity = across * (swing_vel / HEIGHT)
-	Sfx.play("miss" if tilt > topple_swing else "place", -3.0)
+	# Only the clean drop is scored with a sound. A bad drop used to get a buzzer
+	# on top of the piece visibly toppling and the feedback line already saying
+	# why - three tellings of one mistake, and the loudest of them was the one
+	# that added nothing.
+	if tilt <= topple_swing:
+		Sfx.play("place", -3.0)
 	if tilt > topple_swing:
 		_show_feedback("Thả lúc đang lắc!", Color(1, 0.45, 0.4), base)
 	elif tilt > straight_swing:
@@ -1055,7 +1060,7 @@ func _update_settle(delta: float) -> void:
 		else:
 			_show_feedback("Ổn", Color(0.7, 1, 0.7), d.position)
 	else:
-		Sfx.play("miss", -6.0)
+		# Silent for the same reason as the drop above: the piece is lying there.
 		# leaning or lying: it is not a placement, hand it to the collapse flow
 		_on_disturbed(d)
 	_emit_progress()
@@ -1151,7 +1156,7 @@ func _update_ring() -> void:
 	_goal_mat.albedo_color = Color(0.6, 1.0, 0.6) if phase == Phase.RUN else Color(1.0, 0.85, 0.45)
 	_goal_label.text = "ĐÍCH" if goal.armed else "ĐÍCH  (đang khoá)"
 	var ready := phase == Phase.BUILD and _starter() != null
-	_peg_label.text = "▸ ĐẨY DÂY  (Enter)" if ready else "BẮT ĐẦU"
+	_peg_label.text = UiTheme.say("▸ ĐẨY DÂY  (Enter)", "▸ ĐẨY DÂY") if ready else "BẮT ĐẦU"
 	# A sign that pulses is a sign you notice. The static one was there all along
 	# and got missed, which is the only evidence that matters about it.
 	_peg_label.modulate = Color(0.7, 1.0, 0.75) if not ready 		else Color(1.0, 1.0, 0.6).lerp(Color(0.4, 1.0, 0.5), 0.5 + 0.5 * sin(_time * 6.0))
@@ -1160,7 +1165,7 @@ func _update_ring() -> void:
 		var head := chain_head()
 		if _reaches_goal(head):
 			_told_ready = true
-			EventBus.notify.emit("Dây đã tới ĐÍCH - bấm ENTER (hoặc bấm vạch BẮT ĐẦU) để đẩy!", Color(0.7, 1, 0.75))
+			EventBus.notify.emit(UiTheme.say("Dây đã tới ĐÍCH - bấm ENTER (hoặc bấm vạch BẮT ĐẦU) để đẩy!", "Dây đã tới ĐÍCH - bấm vạch BẮT ĐẦU để đẩy!"), Color(0.7, 1, 0.75))
 	_base_ring.visible = dragging
 	if dragging:
 		var b := carried_base()
@@ -1449,7 +1454,7 @@ func debug_fill_route() -> void:
 	_plan.clear()
 	_plan_i = 0
 	if _reaches_goal(_router_tip()):
-		EventBus.notify.emit("Dây đã tới ĐÍCH rồi - bấm ENTER để đẩy!",
+		EventBus.notify.emit(UiTheme.say("Dây đã tới ĐÍCH rồi - bấm ENTER để đẩy!", "Dây đã tới ĐÍCH rồi - bấm vạch BẮT ĐẦU để đẩy!"),
 			Color(0.7, 1, 0.75))
 		return
 	if not _plan_route(_router_tip()):
@@ -1465,7 +1470,7 @@ func debug_fill_route() -> void:
 		EventBus.notify.emit("Chỉ xếp được %d quân - đường bị chặn." % laid,
 			Color(1, 0.7, 0.45))
 	else:
-		EventBus.notify.emit("CHEAT: xếp sẵn %d quân tới ĐÍCH - bấm ENTER để đẩy!" % laid,
+		EventBus.notify.emit(UiTheme.say("CHEAT: xếp sẵn %d quân tới ĐÍCH - bấm ENTER để đẩy!", "CHEAT: xếp sẵn %d quân tới ĐÍCH - bấm vạch BẮT ĐẦU để đẩy!") % laid,
 			Color(0.8, 0.9, 1.0))
 	_emit_progress()
 
