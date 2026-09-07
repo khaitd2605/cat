@@ -11,13 +11,16 @@ config/description="Xếp domino tỉ mỉ trong khi để mắt tới gió và 
 run/main_scene="res://scenes/main_3d.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
-; No Godot logo on the way in. The web shell hardcodes the boot splash into an
-; <img id="status-splash">, so turning the image off is what makes the loading
-; screen show nothing but the progress bar - there is no way to remove it from
-; the generated index.html without a custom HTML shell.
-boot_splash/show_image=false
-; The same colour as the room's Environment background, so the load screen is
-; already the dark warm room the game opens into rather than Godot's grey.
+; The web shell hardcodes the boot splash into an <img id="status-splash"> and
+; holds it there for the whole 37 MB of wasm download, so on a first visit this
+; picture IS the game for ten seconds or more - which is why it is now the room
+; instead of the bare progress bar that used to sit here. The shell sizes it
+; object-fit:contain, so the whole painting survives on every aspect ratio: no
+; crop, and the lamp and the cat at the two edges both stay in frame.
+boot_splash/image="res://assets/loading-splash.png"
+; The room's Environment background colour, which is also what the contain
+; letterbox fills with - so a wide monitor gets dark warm bars that read as the
+; same room rather than as black bars. Still needed before the PNG arrives too.
 boot_splash/bg_color=Color(0.09, 0.06, 0.05, 1)
 
 [autoload]
