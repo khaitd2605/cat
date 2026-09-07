@@ -15,8 +15,9 @@ var state: State = State.PLAYING
 var elapsed := 0.0
 ## Index into LevelSet.LEVELS.
 var level := 0
-## Highest level index reached. Kept so quitting mid-campaign does not cost the
-## progress, which matters more here than a level-select screen would.
+## Highest level index reached. Nothing is gated on it - every level is open
+## from the start - it only remembers how far the campaign has been taken so the
+## level menu keeps offering those desks after a jump back to the first one.
 var reached := 0
 
 func _ready() -> void:
@@ -34,10 +35,11 @@ func _ready() -> void:
 				# past the authored ones any index is a real desk.
 				level = maxi(0, int(args[i + 1]))
 
-## Jump straight to a level from the menu. The menu only offers levels already
-## reached, so this never hands out progress that was not earned.
+## Jump straight to a level from the menu. No gate: the campaign is a set of
+## desks to play, not a ladder to climb, so any level the menu lists is playable.
 func go_to_level(i: int) -> void:
-	level = clampi(i, 0, reached)
+	level = maxi(i, 0)
+	reached = maxi(reached, level)
 	_save_progress()
 	restart()
 
@@ -65,9 +67,9 @@ func _load_progress() -> void:
 	# No upper bound on `reached` any more, only sanity: the campaign is endless, so
 	# a large number here is a player who has been at it, not a corrupt save.
 	reached = clampi(int(cfg.get_value("progress", "reached", 0)), 0, 9999)
-	# Resume where the player left off, but never past what they have unlocked -
-	# a save written by a build with more levels in it must not open a door.
-	level = clampi(int(cfg.get_value("progress", "level", reached)), 0, reached)
+	# Resume where the player left off. Nothing to clamp against: no level is
+	# locked, so a save pointing at a far desk is just a player who got there.
+	level = clampi(int(cfg.get_value("progress", "level", reached)), 0, 9999)
 
 func _save_progress() -> void:
 	var cfg := ConfigFile.new()

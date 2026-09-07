@@ -253,33 +253,24 @@ func _unhandled_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 ## Built fresh each time it opens, because `reached` moves while the game runs
-## and a stale row would offer a level that is not unlocked yet - or, worse,
-## refuse one that is.
+## and the list has to grow with it. Nothing here is locked - every row played.
 func _open_menu() -> void:
 	for old in _menu_rows.get_children():
 		old.queue_free()
-	# Every authored desk, everything unlocked past them, and one locked row so the
-	# player can always see there is a next one. Unbounded, hence the scroller.
+	# Every authored desk, everything the campaign has been taken to past them, and
+	# one more so there is always a next desk to step onto. Unbounded, hence the
+	# scroller.
 	var rows := maxi(LevelSet.authored(), GameManager.reached + 1)
-	# `level` is normally <= `reached`, but --autotest-level drops you straight onto
-	# a generated desk, and a menu that cannot show the level you are standing on is
+	# `level` can sit past `reached` when --autotest-level drops you straight onto a
+	# generated desk, and a menu that cannot show the level you are standing on is
 	# confusing in exactly the situation you opened it to get out of.
 	rows = maxi(rows, GameManager.level + 1)
 	for i in rows + 1:
 		var lv := LevelSet.at(i)
-		var open: bool = i <= GameManager.reached
 		var mark := "  ← đang chơi" if i == GameManager.level else ""
 		var row := UiTheme.button("Màn %d · %s%s" % [i + 1, lv["name"], mark],
 			17, Vector2(320, 42))
-		if open:
-			row.pressed.connect(func() -> void: GameManager.go_to_level(i))
-		else:
-			# Keeps the name: the row is a preview of where the campaign is going,
-			# and "chưa mở" alone told the player nothing about what they were
-			# working towards.
-			row.text = "Màn %d · %s  (chưa mở)" % [i + 1, lv["name"]]
-			row.disabled = true
-			row.add_theme_color_override("font_disabled_color", Color(0.6, 0.55, 0.5, 0.7))
+		row.pressed.connect(func() -> void: GameManager.go_to_level(i))
 		_menu_rows.add_child(row)
 	_menu.visible = true
 	get_tree().paused = true
